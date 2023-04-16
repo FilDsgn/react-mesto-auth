@@ -1,4 +1,6 @@
 import React from "react";
+import { Routes, Route } from "react-router-dom";
+
 import Header from "./Header.js";
 import Main from "./Main.js";
 import Footer from "./Footer.js";
@@ -9,6 +11,9 @@ import EditAvatarPopup from "./EditAvatarPopup.js";
 import AddPlacePopup from "./AddPlacePopup.js";
 import api from "../utils/api.js";
 import { CurrentUserContext } from "../contexts/CurrentUserContext.js";
+import Register from "./Register.js";
+import Login from "./Login.js";
+import InfoTooltip from "./InfoTooltip.js";
 
 function App() {
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] =
@@ -21,6 +26,9 @@ function App() {
   const [selectedCard, setSelectedCard] = React.useState({});
   const [currentUser, setCurrentUser] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(false);
+
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  const [isInfoTooltipOpen, setIsInfoTooltipOpen] = React.useState(false);
 
   const [cards, setCards] = React.useState([]);
 
@@ -167,15 +175,27 @@ function App() {
       <div className="App">
         <div className="page">
           <Header />
-          <Main
-            cards={cards}
-            onEditProfile={setIsEditProfilePopupOpen}
-            onAddPlace={setIsAddPlacePopupOpen}
-            onEditAvatar={setIsEditAvatarPopupOpen}
-            onCardClick={handleCardImageClick}
-            onCardLike={handleCardLike}
-            onCardDelete={handleCardDeleteClick}
-          />
+
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Main
+                  cards={cards}
+                  onEditProfile={setIsEditProfilePopupOpen}
+                  onAddPlace={setIsAddPlacePopupOpen}
+                  onEditAvatar={setIsEditAvatarPopupOpen}
+                  onCardClick={handleCardImageClick}
+                  onCardLike={handleCardLike}
+                  onCardDelete={handleCardDeleteClick}
+                />
+              }
+            />
+            <Route path="/sign-up" element={<Register />} />
+            <Route path="/sign-in" element={<Login />} />
+            <Route path="*" element={<h2>Not Found</h2>} />
+          </Routes>
+
           <Footer />
 
           <EditProfilePopup
@@ -218,6 +238,15 @@ function App() {
             onTransitionEnd={handleTransitionEnd}
             onCardDelete={handleCardDelete}
             onLoading={isLoading}
+          />
+
+          <InfoTooltip
+            name="info-tooltip"
+            isOpen={isInfoTooltipOpen}
+            loggedIn={loggedIn}
+            onClose={closeAllPopups}
+            onOverlayClick={closeOnOverlayClick}
+            onTransitionEnd={handleTransitionEnd}
           />
         </div>
       </div>

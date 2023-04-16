@@ -14,10 +14,6 @@
   margin-top: 16px;
 }
 
-/* .popup__input:last-of-type {
-  margin-bottom: 6px;
-} */
-
 .popup__input:focus {
   outline: none;
 }
