@@ -1,7 +1,7 @@
 function InfoTooltip({
   name,
   isOpen,
-  loggedIn,
+  registered,
   onClose,
   onOverlayClick,
   onTransitionEnd,
@@ -17,14 +17,14 @@ function InfoTooltip({
           <img
             className="popup__tooltip-image"
             src={
-              loggedIn
+              registered
                 ? require("../images/success-icon.png")
                 : require("../images/fail-icon.png")
             }
             alt="статус отправки формы"
           />
           <h2 className="popup__title popup__tooltip-title">
-            {loggedIn
+            {registered
               ? "Вы успешно зарегистрировались!"
               : `Что-то пошло не так!
 Попробуйте ещё раз.`}

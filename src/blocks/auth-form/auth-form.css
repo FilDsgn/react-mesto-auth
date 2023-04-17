@@ -1,11 +1,11 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  max-width: 358px;
+  max-width: 418px;
   width: 100%;
   max-height: 461px;
   height: 461px;
   margin-top: 60px;
-  
-  
+  padding: 0 30px;
+  box-sizing: border-box;
 }

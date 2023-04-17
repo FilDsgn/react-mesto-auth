@@ -7,3 +7,5 @@ function ProtectedRoute({ element: Component, ...props }) {
     <Navigate to="/sign-in" replace />
   );
 }
+
+export default ProtectedRoute;

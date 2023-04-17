@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import Header from "./Header.js";
 import Main from "./Main.js";
@@ -28,6 +28,9 @@ function App() {
   const [isLoading, setIsLoading] = React.useState(false);
 
   const [loggedIn, setLoggedIn] = React.useState(false);
+  const [registered, setRegistered] = React.useState(false);
+  const [userEmail, setUserEmail] = React.useState("");
+
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = React.useState(false);
 
   const [cards, setCards] = React.useState([]);
@@ -37,7 +40,8 @@ function App() {
     isAddPlacePopupOpen ||
     isEditAvatarPopupOpen ||
     isConfirmPopupOpen ||
-    isImagePopupOpen;
+    isImagePopupOpen ||
+    isInfoTooltipOpen;
 
   React.useEffect(() => {
     api
@@ -61,6 +65,7 @@ function App() {
     setIsEditAvatarPopupOpen(false);
     setIsImagePopupOpen(false);
     setIsConfirmPopupOpen(false);
+    setIsInfoTooltipOpen(false);
   }
 
   function closeOnOverlayClick(e) {
@@ -170,29 +175,69 @@ function App() {
       });
   }
 
+  function handleLogin(email) {
+    setUserEmail(email);
+    setLoggedIn(true);
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setLoggedIn(false);
+    setUserEmail("");
+  }
+
+  function handleTooltipOpen() {
+    setIsInfoTooltipOpen(true);
+  }
+
+  function handleRegistered(isRegistered) {
+    setRegistered(isRegistered);
+  }
+
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="App">
         <div className="page">
-          <Header />
+          <Header
+            userEmail={userEmail}
+            isLoggedIn={loggedIn}
+            onLogout={handleLogout}
+          />
 
           <Routes>
             <Route
               path="/"
               element={
-                <Main
-                  cards={cards}
-                  onEditProfile={setIsEditProfilePopupOpen}
-                  onAddPlace={setIsAddPlacePopupOpen}
-                  onEditAvatar={setIsEditAvatarPopupOpen}
-                  onCardClick={handleCardImageClick}
-                  onCardLike={handleCardLike}
-                  onCardDelete={handleCardDeleteClick}
+                loggedIn ? (
+                  <Main
+                    cards={cards}
+                    onEditProfile={setIsEditProfilePopupOpen}
+                    onAddPlace={setIsAddPlacePopupOpen}
+                    onEditAvatar={setIsEditAvatarPopupOpen}
+                    onCardClick={handleCardImageClick}
+                    onCardLike={handleCardLike}
+                    onCardDelete={handleCardDeleteClick}
+                  />
+                ) : (
+                  <Navigate to="/sign-in" replace />
+                )
+              }
+            />
+
+            <Route
+              path="/sign-up"
+              element={
+                <Register
+                  handleLogin={handleLogin}
+                  handleTooltipOpen={handleTooltipOpen}
+                  handleRegistered={handleRegistered}
                 />
               }
             />
-            <Route path="/sign-up" element={<Register />} />
-            <Route path="/sign-in" element={<Login />} />
+            <Route
+              path="/sign-in"
+              element={<Login handleLogin={handleLogin} />}
+            />
             <Route path="*" element={<h2>Not Found</h2>} />
           </Routes>
 
@@ -243,7 +288,8 @@ function App() {
           <InfoTooltip
             name="info-tooltip"
             isOpen={isInfoTooltipOpen}
-            loggedIn={loggedIn}
+            // loggedIn={loggedIn}
+            registered={registered}
             onClose={closeAllPopups}
             onOverlayClick={closeOnOverlayClick}
             onTransitionEnd={handleTransitionEnd}
