@@ -1,37 +1,49 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useFormValidation from "../utils/useFormValidation";
 
 import AuthForm from "./AuthForm";
 import * as auth from "../utils/auth.js";
 
-function Register({ handleLogin, handleTooltipOpen, handleRegistered }) {
-  const [formValue, setFormValue] = useState({ password: "", email: "" });
-  const [errorMessage, setErrorMessage] = useState("");
-
+function Register({
+  handleLogin,
+  handleTooltipOpen,
+  handleRegistered,
+  handleLoading,
+  onLoading,
+}) {
   const navigate = useNavigate();
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setFormValue({ ...formValue, [name]: value });
-    console.log(formValue);
-  }
+  const { values, errors, isValid, handleChange, setValue, reset, formRef } =
+    useFormValidation();
+
+  useEffect(() => {
+    setValue("email", "");
+    setValue("password", "");
+  }, [setValue]);
 
   function handleSubmit(e) {
-    e.preventDefault();
+    handleLoading(true);
 
-    const { password, email } = formValue;
-    auth
-      .register(password, email)
-      .then((data) => {
-        navigate("/sign-in");
-        handleRegistered(true);
-        handleTooltipOpen();
-      })
-      .catch((err) => {
-        handleRegistered(false);
-        handleTooltipOpen();
-        setErrorMessage(err);
-      });
+    e.preventDefault();
+    if (isValid) {
+      const { password, email } = values;
+      auth
+        .register(password, email)
+        .then((data) => {
+          navigate("/sign-in");
+          handleRegistered(true);
+          handleTooltipOpen();
+          reset();
+        })
+        .catch((err) => {
+          handleRegistered(false);
+          handleTooltipOpen();
+        })
+        .finally(() => {
+          handleLoading(false);
+        });
+    }
   }
 
   function tokenCheck() {
@@ -59,10 +71,36 @@ function Register({ handleLogin, handleTooltipOpen, handleRegistered }) {
       buttonText="Зарегистрироваться"
       buttonTextOnLoading="Реристрируюсь"
       linkText="Уже зарегистрированы? Войти"
-      handleChange={handleChange}
       handleSubmit={handleSubmit}
-      formValue={formValue}
-    />
+      onLoading={onLoading}
+      isValid={isValid}
+      ref={formRef}
+    >
+      <input
+        type="email"
+        minLength="2"
+        maxLength="30"
+        required
+        placeholder="Email"
+        className="auth-form__input"
+        onChange={handleChange}
+        name="email"
+        value={values["email"] ?? ""}
+      />
+      <span className="auth-form__input-error">{errors.email}</span>
+      <input
+        type="password"
+        minLength="5"
+        maxLength="30"
+        required
+        placeholder="Пароль"
+        className="auth-form__input"
+        onChange={handleChange}
+        name="password"
+        value={values["password"] ?? ""}
+      />
+      <span className="auth-form__input-error">{errors.password}</span>
+    </AuthForm>
   );
 }
 

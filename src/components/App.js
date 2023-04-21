@@ -194,6 +194,10 @@ function App() {
     setRegistered(isRegistered);
   }
 
+  function handleLoading(isLoading) {
+    setIsLoading(isLoading);
+  }
+
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="App">
@@ -231,12 +235,20 @@ function App() {
                   handleLogin={handleLogin}
                   handleTooltipOpen={handleTooltipOpen}
                   handleRegistered={handleRegistered}
+                  handleLoading={handleLoading}
+                  onLoading={isLoading}
                 />
               }
             />
             <Route
               path="/sign-in"
-              element={<Login handleLogin={handleLogin} />}
+              element={
+                <Login
+                  handleLogin={handleLogin}
+                  handleLoading={handleLoading}
+                  onLoading={isLoading}
+                />
+              }
             />
             <Route path="*" element={<h2>Not Found</h2>} />
           </Routes>

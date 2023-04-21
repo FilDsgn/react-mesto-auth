@@ -7,7 +7,7 @@
   height: 50px;
   border-radius: 2px;
   border: none;
-  margin-top: 216px;
+  margin-top: 186px;
 }
 
 .auth-form__button:hover {
@@ -17,6 +17,6 @@
 @media screen and (max-width: 440px) {
   .auth-form__button {
     font-size: 16px;
-    margin-top: 173px;
+    margin-top: 143px;
   }
 }

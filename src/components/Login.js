@@ -1,42 +1,50 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+import useFormValidation from "../utils/useFormValidation";
 import AuthForm from "./AuthForm";
 import * as auth from "../utils/auth.js";
 
-function Login({ handleLogin }) {
-  const [formValue, setFormValue] = useState({ password: "", email: "" });
-  const [errorMessage, setErrorMessage] = useState("");
-
+function Login({ handleLogin, handleLoading, onLoading }) {
   const navigate = useNavigate();
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setFormValue({ ...formValue, [name]: value });
-  }
+  const { values, errors, isValid, handleChange, setValue, reset, formRef } =
+    useFormValidation();
+
+  useEffect(() => {
+    setValue("email", "");
+    setValue("password", "");
+  }, [setValue]);
 
   function handleSubmit(e) {
+    handleLoading(true);
+
     e.preventDefault();
 
-    const { password, email } = formValue;
+    if (isValid) {
+      const { password, email } = values;
 
-    if (!password || !email) {
-      return;
+      if (!password || !email) {
+        return;
+      }
+
+      auth
+        .authorize(password, email)
+        .then((data) => {
+          if (data.token) {
+            localStorage.setItem("token", data.token);
+            handleLogin(email);
+            navigate("/");
+            reset();
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          handleLoading(false);
+        });
     }
-
-    auth
-      .authorize(password, email)
-      .then((data) => {
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-          handleLogin(email);
-          console.log(email);
-          navigate("/");
-        }
-      })
-      .catch((err) => {
-        setErrorMessage(err);
-      });
   }
 
   function tokenCheck() {
@@ -63,10 +71,36 @@ function Login({ handleLogin }) {
       name="login"
       buttonText="Войти"
       buttonTextOnLoading="Вхожу"
-      handleChange={handleChange}
       handleSubmit={handleSubmit}
-      formValue={formValue}
-    />
+      onLoading={onLoading}
+      isValid={isValid}
+      ref={formRef}
+    >
+      <input
+        type="email"
+        minLength="2"
+        maxLength="30"
+        required
+        placeholder="Email"
+        className="auth-form__input"
+        onChange={handleChange}
+        name="email"
+        value={values["email"] ?? ""}
+      />
+      <span className="auth-form__input-error">{errors.email}</span>
+      <input
+        type="password"
+        minLength="5"
+        maxLength="30"
+        required
+        placeholder="Пароль"
+        className="auth-form__input"
+        onChange={handleChange}
+        name="password"
+        value={values["password"] ?? ""}
+      />
+      <span className="auth-form__input-error">{errors.password}</span>
+    </AuthForm>
   );
 }
 
