@@ -1,6 +1,4 @@
-import { Link, Routes, Route, useParams } from "react-router-dom";
-import Register from "./Register";
-import Login from "./Login";
+import { Link, Routes, Route } from "react-router-dom";
 
 function Header({ userEmail, isLoggedIn, onLogout }) {
   return (

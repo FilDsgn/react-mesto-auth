@@ -253,7 +253,7 @@ function App() {
             <Route path="*" element={<h2>Not Found</h2>} />
           </Routes>
 
-          <Footer />
+          {loggedIn && <Footer />}
 
           <EditProfilePopup
             isOpen={isEditProfilePopupOpen}
@@ -300,7 +300,6 @@ function App() {
           <InfoTooltip
             name="info-tooltip"
             isOpen={isInfoTooltipOpen}
-            // loggedIn={loggedIn}
             registered={registered}
             onClose={closeAllPopups}
             onOverlayClick={closeOnOverlayClick}
