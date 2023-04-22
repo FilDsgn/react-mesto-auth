@@ -1,14 +1,10 @@
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 import useFormValidation from "../utils/useFormValidation";
 import AuthForm from "./AuthForm";
-import * as auth from "../utils/auth.js";
 
-function Login({ handleLogin, handleLoading, onLoading }) {
-  const navigate = useNavigate();
-
-  const { values, errors, isValid, handleChange, setValue, reset, formRef } =
+function Login({ onSubmit, onTokenCheck, onLoading }) {
+  const { values, errors, isValid, handleChange, setValue, formRef } =
     useFormValidation();
 
   useEffect(() => {
@@ -17,8 +13,6 @@ function Login({ handleLogin, handleLoading, onLoading }) {
   }, [setValue]);
 
   function handleSubmit(e) {
-    handleLoading(true);
-
     e.preventDefault();
 
     if (isValid) {
@@ -28,41 +22,12 @@ function Login({ handleLogin, handleLoading, onLoading }) {
         return;
       }
 
-      auth
-        .authorize(password, email)
-        .then((data) => {
-          if (data.token) {
-            localStorage.setItem("token", data.token);
-            handleLogin(email);
-            navigate("/");
-            reset();
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-        .finally(() => {
-          handleLoading(false);
-        });
+      onSubmit(password, email);
     }
-  }
-
-  function tokenCheck() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      return;
-    }
-
-    auth.getContent(token).then((res) => {
-      if (res) {
-        handleLogin(res.data.email);
-        navigate("/");
-      }
-    });
   }
 
   useEffect(() => {
-    tokenCheck();
+    onTokenCheck();
   }, []);
 
   return (

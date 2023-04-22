@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 import Header from "./Header.js";
 import Main from "./Main.js";
@@ -14,6 +14,7 @@ import { CurrentUserContext } from "../contexts/CurrentUserContext.js";
 import Register from "./Register.js";
 import Login from "./Login.js";
 import InfoTooltip from "./InfoTooltip.js";
+import * as auth from "../utils/auth.js";
 
 function App() {
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] =
@@ -34,6 +35,8 @@ function App() {
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = React.useState(false);
 
   const [cards, setCards] = React.useState([]);
+
+  const navigate = useNavigate();
 
   const isPopupOpen =
     isEditProfilePopupOpen ||
@@ -170,6 +173,7 @@ function App() {
         setCards([card, ...cards]);
         closeAllPopups();
       })
+      .catch((err) => console.log(err))
       .finally(() => {
         setIsLoading(false);
       });
@@ -180,6 +184,62 @@ function App() {
     setLoggedIn(true);
   }
 
+  function handleLoginSubmit(password, email) {
+    setIsLoading(true);
+    auth
+      .authorize(password, email)
+      .then((data) => {
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          setUserEmail(email);
+          setLoggedIn(true);
+          navigate("/");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
+
+  function handleRegisterSubmit(password, email) {
+    setIsLoading(true);
+    auth
+      .register(password, email)
+      .then((data) => {
+        navigate("/sign-in");
+        setRegistered(true);
+        handleTooltipOpen();
+      })
+      .catch((err) => {
+        setRegistered(false);
+        handleTooltipOpen();
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
+
+  function handleTokenCheck() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return;
+    }
+
+    auth
+      .getContent(token)
+      .then((res) => {
+        if (res) {
+          setLoggedIn(true);
+          handleLogin(res.data.email);
+          navigate("/");
+        }
+      })
+      .catch((err) => console.log(err));
+  }
+
   function handleLogout() {
     localStorage.removeItem("token");
     setLoggedIn(false);
@@ -188,14 +248,6 @@ function App() {
 
   function handleTooltipOpen() {
     setIsInfoTooltipOpen(true);
-  }
-
-  function handleRegistered(isRegistered) {
-    setRegistered(isRegistered);
-  }
-
-  function handleLoading(isLoading) {
-    setIsLoading(isLoading);
   }
 
   return (
@@ -232,10 +284,8 @@ function App() {
               path="/sign-up"
               element={
                 <Register
-                  handleLogin={handleLogin}
-                  handleTooltipOpen={handleTooltipOpen}
-                  handleRegistered={handleRegistered}
-                  handleLoading={handleLoading}
+                  onSubmit={handleRegisterSubmit}
+                  onTokenCheck={handleTokenCheck}
                   onLoading={isLoading}
                 />
               }
@@ -244,8 +294,8 @@ function App() {
               path="/sign-in"
               element={
                 <Login
-                  handleLogin={handleLogin}
-                  handleLoading={handleLoading}
+                  onSubmit={handleLoginSubmit}
+                  onTokenCheck={handleTokenCheck}
                   onLoading={isLoading}
                 />
               }

@@ -1,20 +1,10 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import useFormValidation from "../utils/useFormValidation";
 
 import AuthForm from "./AuthForm";
-import * as auth from "../utils/auth.js";
 
-function Register({
-  handleLogin,
-  handleTooltipOpen,
-  handleRegistered,
-  handleLoading,
-  onLoading,
-}) {
-  const navigate = useNavigate();
-
-  const { values, errors, isValid, handleChange, setValue, reset, formRef } =
+function Register({ onSubmit, onTokenCheck, onLoading }) {
+  const { values, errors, isValid, handleChange, setValue, formRef } =
     useFormValidation();
 
   useEffect(() => {
@@ -23,45 +13,15 @@ function Register({
   }, [setValue]);
 
   function handleSubmit(e) {
-    handleLoading(true);
-
     e.preventDefault();
     if (isValid) {
       const { password, email } = values;
-      auth
-        .register(password, email)
-        .then((data) => {
-          navigate("/sign-in");
-          handleRegistered(true);
-          handleTooltipOpen();
-          reset();
-        })
-        .catch((err) => {
-          handleRegistered(false);
-          handleTooltipOpen();
-        })
-        .finally(() => {
-          handleLoading(false);
-        });
+      onSubmit(password, email);
     }
-  }
-
-  function tokenCheck() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      return;
-    }
-
-    auth.getContent(token).then((res) => {
-      if (res) {
-        handleLogin(res.data.email);
-        navigate("/");
-      }
-    });
   }
 
   useEffect(() => {
-    tokenCheck();
+    onTokenCheck();
   }, []);
 
   return (
